@@ -148,9 +148,13 @@ public class VsphereService implements HypervisorService {
         }
 
         if (trustManager != null) {
-            return new ServiceInstance(url, reg.getUsername(), reg.getPassword(), trustManager, 0, 0);
+            // Utilisation de timeouts explicites pour éviter les threads zombies
+            return new ServiceInstance(url, reg.getUsername(), reg.getPassword(), trustManager, 5000, 5000);
         } else {
-            return new ServiceInstance(url, reg.getUsername(), reg.getPassword(), true);
+            ServiceInstance si = new ServiceInstance(url, reg.getUsername(), reg.getPassword(), true);
+            si.getServerConnection().getVimService().getWsc().setConnectTimeout(5000);
+            si.getServerConnection().getVimService().getWsc().setReadTimeout(10000);
+            return si;
         }
     }
 

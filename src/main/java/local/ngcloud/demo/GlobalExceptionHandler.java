@@ -56,9 +56,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RemoteException.class)
     public ResponseEntity<Map<String, Object>> handleVsphereAuthException(RemoteException ex) {
         Map<String, Object> body = new HashMap<>();
-        String fullStackTrace = ex.toString(); // On cherche dans toute la chaîne d'erreur
+        String errorMessage = ex.getMessage() != null ? ex.getMessage() : "";
         
-        if (fullStackTrace.contains("Cannot complete login due to an incorrect user name or password.")) {
+        // Vérification plus robuste de l'erreur d'authentification
+        if (errorMessage.contains("incorrect user name or password") || ex.getClass().getSimpleName().contains("InvalidLogin")) {
             body.put("status", HttpStatus.UNAUTHORIZED.value());
             body.put("error", "Unauthorized");
             body.put("message", "Échec de l'authentification vSphere : Nom d'utilisateur ou mot de passe incorrect.");
